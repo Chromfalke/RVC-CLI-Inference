@@ -17,10 +17,11 @@ Consult the [Wiki](https://github.com/Chromfalke/RVC-CLI-Inference/wiki) for mor
 
 ## Setup
 1. Clone this repository or download as a zip file.
-2. Navigate to the project directory and create a virtual environment `conda create -n rvc-cli python=3.8.18`
-3. Activate the virtual environment `conda activate rvc-cli`
-4. Install the required packages using pip `pip install -r requirements.txt`
-5. Run the main.py file. The script will prompt you for any needed parameters. `python main.py`
+2. Download 'hubert_model.pth' and 'rmvpe.pt' for example from [here](https://huggingface.co/datasets/SayanoAI/RVC-Studio/tree/main) and place it inside the 'rvc/lib' folder
+3. Navigate to the project directory and create a virtual environment `conda create -n rvc-cli python=3.8.18`
+4. Activate the virtual environment `conda activate rvc-cli`
+5. Install the required packages using pip `pip install -r requirements.txt`
+6. Run the main.py file. The script will prompt you for any needed parameters. `python main.py`
 
 A detailed walkthrough or the individual steps can be found in the [Wiki](https://github.com/Chromfalke/RVC-CLI-Inference/wiki).
 
