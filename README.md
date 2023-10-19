@@ -1,5 +1,3 @@
-> :warning: The script is as of yet not functional. Development will be slow as I have a lot of other stuff to do at the moment.
-
 # RVC CLI Inference
 This project provides a simple yet comprehensive wrapper for the cli inference script from the RVC-Project. There are a multitude of WebUIs covering the process of training models and performing inference. However many of them feel overcomplicated for the relatively simple task of performing inference on an audio file.
 
