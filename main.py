@@ -98,6 +98,37 @@ class CLI_Interface:
             else:
                 print(f"Field 'audio_file' in settings needs to be a string.")
 
+    def index_matching(self, model_name: str, model_path: str) -> str:
+        matching_index_files = []
+        for file in os.listdir(os.path.join("models", "index")):
+            if os.path.isfile(os.path.join("models", "index", file)):
+                if file.endswith(f"{model_name}_v1.index") or file.endswith(f"{model_name}_v2.index") or file.endswith(f"{model_name}.index"):
+                    matching_index_files.append(file)
+        if len(matching_index_files) == 1:
+            return os.path.join("models", "index", matching_index_files[0])
+        elif len(matching_index_files) > 1:
+            print(f"Found multiple matching indexes {matching_index_files} for model {model_name}.")
+            sys.exit(1)
+        else:
+            categories = os.path.sep.join(model_path.split(os.path.sep)[2:])
+            if categories != "":
+                matching_index_files = []
+                for file in os.listdir(os.path.join("models", "index", categories)):
+                    if os.path.isfile(os.path.join("models", "index", categories, file)):
+                        if file.endswith(f"{model_name}_v1.index") or file.endswith(f"{model_name}_v2.index") or file.endswith(f"{model_name}.index"):
+                            matching_index_files.append(file)
+                if len(matching_index_files) == 1:
+                    return os.path.join("models", "index", categories, matching_index_files[0])
+                elif len(matching_index_files) > 1:
+                    print(f"Found multiple matching indexes {matching_index_files} for model {model_name}.")
+                    sys.exit(1)
+                else:
+                    print(f"No matching index could be found for model {model_name}.")
+                    sys.exit(1)
+            else:
+                print(f"No matching index could be found for model {model_name}.")
+                sys.exit(1)
+
     def model_selection_loop(self, dir: str):
         while self.model_path == "" or self.index_file == "":
             dir_contents = os.listdir(dir)
@@ -132,19 +163,7 @@ class CLI_Interface:
                     if selection_num < len(models):
                         self.model_path = os.path.join(dir, models[selection_num])
                         model_name = models[selection_num].split(".")[0]
-                        matching_index_files = []
-                        for file in os.listdir(os.path.join("models", "index")):
-                            if os.path.isfile(os.path.join("models", "index", file)):
-                                if file.endswith(f"{model_name}_v1.index") or file.endswith(f"{model_name}_v2.index") or file.endswith(f"{model_name}.index"):
-                                    matching_index_files.append(file)
-                        if len(matching_index_files) == 1:
-                            self.index_file = os.path.join("models", "index", matching_index_files[0])
-                        elif len(matching_index_files) == 0:
-                            print(f"The index for the model {model_name} could not be determined.")
-                            sys.exit(1)
-                        else:
-                            print(f"Found multiple matching indexes {matching_index_files} for model {model_name}.")
-                            sys.exit(1)
+                        self.index_file = self.index_matching(model_name, os.path.dirname(self.model_path))
                     else:
                         self.model_selection_loop(os.path.join(dir, categories[selection_num-len(models)]))
                 else:

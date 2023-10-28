@@ -166,3 +166,4 @@ models/
 !models/index
 rvc/*.pt
 !rvc/lib
+settings.json
