@@ -12,11 +12,10 @@ class CLI_Interface:
 
     def __init__(self) -> None:
         self.pitch_adjustment = None
-        self.model_path = ""
-        self.index_file = ""
+        self.model = []
         self.device = ""
         self.pitch_extraction_method = ""
-        self.audio_file = ""
+        self.audio = []
         
     def load_settings(self):
         with open("settings.json", "r") as file:
@@ -35,31 +34,44 @@ class CLI_Interface:
                 print(f"Invalid pitch extraction method {settings['pitch_extraction_method']} in settings.")
             
         if "model" in settings:
+            models = []
             if isinstance(settings["model"], str):
-                model = ""
-                for root, _, files in os.walk("models"):
-                    for file in files:
-                        if file.endswith(settings["model"] + ".pth"):
-                            model = os.path.join(root, file)
-                if model != "":
-                    matching_index_files = []
-                    for file in os.listdir(os.path.join("models", "index")):
-                        if os.path.isfile(os.path.join("models", "index", file)):
-                            if file.endswith(f"{settings['model']}_v1.index") or file.endswith(f"{settings['model']}_v2.index") or file.endswith(f"{settings['model']}.index"):
-                                matching_index_files.append(file)
-                    if len(matching_index_files) == 1:
-                        self.model_path = model
-                        self.index_file = os.path.join("models", "index", matching_index_files[0])
-                    elif len(matching_index_files) == 0:
-                        print(f"The index for the model {settings['model']} could not be determined.")
-                        sys.exit(1)
+                if settings["model"] == "all":
+                    for root, _, files in os.walk("models"):
+                        for file in files:
+                            if file.endswith(".pth"):
+                                models.append(os.path.join(root, file))
+                elif ";" in settings["model"]:
+                    for value in settings["model"].split(";"):
+                        model_path = os.path.join("models", value)
+                        if os.path.isfile(model_path) and os.path.exists(model_path) and model_path.endswith(".pth"):
+                            models.append(model_path)
+                        elif os.path.isdir(model_path) and os.path.exists(model_path):
+                            for root, _, files in os.walk(model_path):
+                                for file in files:
+                                    if file.endswith(".pth"):
+                                        models.append(os.path.join("in", root, file))
+                        else:
+                            print(f"Model {settings['model']} specified in settings does not exist.")
+                elif settings["model"] != "":
+                    model_path = os.path.join("models", settings["model"])
+                    if os.path.isfile(model_path) and os.path.exists(model_path) and model_path.endswith(".pth"):
+                        models.append(model_path)
+                    elif os.path.isdir(model_path) and os.path.exists(model_path):
+                        for root, _, files in os.walk(model_path):
+                            for file in files:
+                                if file.endswith(".pth"):
+                                    models.append(os.path.join("in", root, file))
                     else:
-                        print(f"Found multiple matching indexes {matching_index_files} for model {settings['model']}.")
-                        sys.exit(1)
+                        print(f"Model {settings['model']} specified in settings does not exist.")
                 else:
-                    print(f"Model file for model with name {settings['model']} could not be found.")
+                    print(f"Invalid model {settings['model']} specified in settings.")
             else:
                 print(f"Field 'model' in settings needs to be a string.")
+
+            for model in models:
+                model_name = os.path.basename(model).split(".")[0]
+                self.model.append((model, self.index_matching(model_name, model)))
         
         if "device" in settings:
             if isinstance(settings["device"], str):
@@ -86,17 +98,37 @@ class CLI_Interface:
         if "audio_file" in settings:
             if isinstance(settings["audio_file"], str):
                 if settings["audio_file"] == "all":
-                    self.audio_file = settings["audio_file"]
-                elif settings["audio_file"].endswith(".wav"):
-                    file_path = os.path.join("in", settings["audio_file"])
-                    if os.path.exists(file_path):
-                        self.audio_file = settings["audio_file"]
+                    for root, _, files in os.walk("in"):
+                        for file in files:
+                            if file.endswith(".wav"):
+                                self.audio.append(os.path.join(root, file))
+                elif ";" in settings["audio_file"]:
+                    for value in settings["audio_file"].split(";"):
+                        audio_path = os.path.join("in", value)
+                        if os.path.isfile(audio_path) and os.path.exists(audio_path) and audio_path.endswith(".wav"):
+                            self.audio.append(audio_path)
+                        elif os.path.isdir(audio_path) and os.path.exists(audio_path):
+                            for root, _, files in os.walk(audio_path):
+                                for file in files:
+                                    if file.endswith(".wav"):
+                                        self.audio.append(os.path.join("in", root, file))
+                        else:
+                            print(f"Audio file {settings['audio_file']} specified in settings does not exist.")
+                elif settings["audio_file"] != "":
+                    audio_path = os.path.join("in", settings["audio_file"])
+                    if os.path.isfile(audio_path) and os.path.exists(audio_path) and audio_path.endswith(".wav"):
+                        self.audio.append(audio_path)
+                    elif os.path.isdir(audio_path) and os.path.exists(audio_path):
+                        for root, _, files in os.walk(audio_path):
+                            for file in files:
+                                if file.endswith(".wav"):
+                                    self.audio.append(os.path.join("in", root, file))
                     else:
                         print(f"Audio file {settings['audio_file']} specified in settings does not exist.")
                 else:
                     print(f"Invalid audio file {settings['audio_file']} specified in settings.")
             else:
-                print(f"Field 'audio_file' in settings needs to be a string.")
+                print(f"Field 'audio_file' in settings is not a string.")
 
     def index_matching(self, model_name: str, model_path: str) -> str:
         matching_index_files = []
@@ -110,7 +142,7 @@ class CLI_Interface:
             print(f"Found multiple matching indexes {matching_index_files} for model {model_name}.")
             sys.exit(1)
         else:
-            categories = os.path.sep.join(model_path.split(os.path.sep)[2:])
+            categories = os.path.sep.join(model_path.split(os.path.sep)[1:])
             if categories != "":
                 matching_index_files = []
                 for file in os.listdir(os.path.join("models", "index", categories)):
@@ -130,7 +162,7 @@ class CLI_Interface:
                 sys.exit(1)
 
     def model_selection_loop(self, dir: str):
-        while self.model_path == "" or self.index_file == "":
+        while len(self.model) == 0:
             dir_contents = os.listdir(dir)
             dir_contents.sort()
             models = [path for path in dir_contents if os.path.isfile(os.path.join(dir, path))]
@@ -161,9 +193,9 @@ class CLI_Interface:
                 selection_num = int(model_selection)
                 if 0 <= selection_num <= len(models) + len(categories) - 1:
                     if selection_num < len(models):
-                        self.model_path = os.path.join(dir, models[selection_num])
+                        model_path = os.path.join(dir, models[selection_num])
                         model_name = models[selection_num].split(".")[0]
-                        self.index_file = self.index_matching(model_name, os.path.dirname(self.model_path))
+                        self.model.append(model_path, self.index_matching(model_name, model_path))
                     else:
                         self.model_selection_loop(os.path.join(dir, categories[selection_num-len(models)]))
                 else:
@@ -229,46 +261,39 @@ class CLI_Interface:
                 print("Invalid selection. Try again.")
 
         # select audio
-        if self.audio_file == "":
-            loop = True
-            while loop:
-                print("Select the audio file(s) to use. Separate multiple selections with ';'")
-                audio_files = [file for file in os.listdir("in") if file.endswith(".wav")]
-                if len(audio_files) == 0:
-                    print("No audio files available.")
-                    sys.exit(1)
-                for i in range(len(audio_files)):
-                    print(f"[{i}] {audio_files[i]}")
-                print(f"[{len(audio_files)}] All Files")
-                audio_selection = input("> ")
-                try:
-                    selection_num = int(audio_selection)
+        while len(self.audio) == 0:
+            print("Select the audio file(s) to use. Separate multiple selections with ';'")
+            audio_files = [file for file in os.listdir("in") if file.endswith(".wav")]
+            if len(audio_files) == 0:
+                print("No audio files available.")
+                sys.exit(1)
+            for i in range(len(audio_files)):
+                print(f"[{i}] {audio_files[i]}")
+            print(f"[{len(audio_files)}] All Files")
+            audio_selection = input("> ")
+            try:
+                if ";" in audio_selection:
+                    numbers = [int(i) for i in audio_selection.split(";")]
+                else:
+                    numbers = [int(audio_selection)]
+                for selection_num in numbers:
                     if 0 <= selection_num < len(audio_files):
-                        input_file = os.path.join("in", audio_files[selection_num])
-                        output_file = os.path.join("out", audio_files[selection_num])
-                        infer(self.pitch_adjustment, input_file, output_file, self.model_path, self.index_file, self.device, self.pitch_extraction_method)
-                        loop = False
+                        self.audio.append(os.path.join("in", audio_files[selection_num]))
                     elif selection_num == len(audio_files):
                         for i in range(audio_files):
-                            input_file = os.path.join("in", audio_files[i])
-                            output_file = os.path.join("out", audio_files[i])
-                            infer(self.pitch_adjustment, input_file, output_file, self.model_path, self.index_file, self.device, self.pitch_extraction_method)
-                        loop = False
+                            self.audio.append(os.path.join("in", audio_files[i]))
                     else:
                         print("Invalid selection. Try again.")
-                except ValueError:
-                    print("Invalid selection. Try again.")
-        elif self.audio_file == "all":
-            audio_files = [file for file in os.listdir("in") if file.endswith(".wav")]
-            for i in range(audio_files):
-                input_file = os.path.join("in", audio_files[i])
-                output_file = os.path.join("out", audio_files[i])
-                infer(self.pitch_adjustment, input_file, output_file, self.model_path, self.index_file, self.device, self.pitch_extraction_method)
-        else:
-            input_file = os.path.join("in", self.audio_file)
-            output_file = os.path.join("out", self.audio_file)
-            infer(self.pitch_adjustment, input_file, output_file, self.model_path, self.index_file, self.device, self.pitch_extraction_method)
+            except ValueError:
+                print("Invalid selection. Try again.")
 
+    # perform inference for all selected files and models
+    def perform_inference(self):
+        for model, index in self.model:
+            for audio_file in self.audio:
+                out_name = os.path.basename(audio_file).split(".")[0]+f"_{model}.wav"
+                output_file = os.path.join("out", out_name)
+                infer(self.pitch_adjustment, audio_file, output_file, model, index, self.device, self.pitch_extraction_method)
 
 def folder_check():
     for folder in ["in", "out", "models", os.path.join("models", "index")]:
