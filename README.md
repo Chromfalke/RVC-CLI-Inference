@@ -21,10 +21,8 @@ Consult the [Wiki](https://github.com/Chromfalke/RVC-CLI-Inference/wiki) for mor
 5. Install the required packages using pip `pip install -r requirements.txt`
 6. Run the main.py file. The script will prompt you for any needed parameters. `python main.py`
 
-A detailed walkthrough or the individual steps can be found in the [Wiki](https://github.com/Chromfalke/RVC-CLI-Inference/wiki).
-
 ## Limitations
-The project was developed and tested on Linux using conda for the cirtual environmant.
+The project was developed and tested on Linux using conda for the virtual environmant.
 
 At the moment only the inference process itself is supported. That means that the input files should consist of clear and clean speech without music or background noise. If you want to make a song cover for example you'll need to extract the vocals first with another tool.
 
