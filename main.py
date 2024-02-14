@@ -95,15 +95,15 @@ class CLI_Interface:
             else:
                 print(f"Field 'device' in settings needs to be a string.")
 
-        if "audio_file" in settings:
-            if isinstance(settings["audio_file"], str):
-                if settings["audio_file"] == "all":
+        if "audio" in settings:
+            if isinstance(settings["audio"], str):
+                if settings["audio"] == "all":
                     for root, _, files in os.walk("in"):
                         for file in files:
                             if file.endswith(".wav"):
                                 self.audio.append(os.path.join(root, file))
-                elif ";" in settings["audio_file"]:
-                    for value in settings["audio_file"].split(";"):
+                elif ";" in settings["audio"]:
+                    for value in settings["audio"].split(";"):
                         audio_path = os.path.join("in", value)
                         if os.path.isfile(audio_path) and os.path.exists(audio_path) and audio_path.endswith(".wav"):
                             self.audio.append(audio_path)
@@ -113,9 +113,9 @@ class CLI_Interface:
                                     if file.endswith(".wav"):
                                         self.audio.append(os.path.join("in", root, file))
                         else:
-                            print(f"Audio file {settings['audio_file']} specified in settings does not exist.")
-                elif settings["audio_file"] != "":
-                    audio_path = os.path.join("in", settings["audio_file"])
+                            print(f"Audio file {settings['audio']} specified in settings does not exist.")
+                elif settings["audio"] != "":
+                    audio_path = os.path.join("in", settings["audio"])
                     if os.path.isfile(audio_path) and os.path.exists(audio_path) and audio_path.endswith(".wav"):
                         self.audio.append(audio_path)
                     elif os.path.isdir(audio_path) and os.path.exists(audio_path):
@@ -124,11 +124,11 @@ class CLI_Interface:
                                 if file.endswith(".wav"):
                                     self.audio.append(os.path.join("in", root, file))
                     else:
-                        print(f"Audio file {settings['audio_file']} specified in settings does not exist.")
+                        print(f"Audio file {settings['audio']} specified in settings does not exist.")
                 else:
-                    print(f"Invalid audio file {settings['audio_file']} specified in settings.")
+                    print(f"Invalid audio file {settings['audio']} specified in settings.")
             else:
-                print(f"Field 'audio_file' in settings is not a string.")
+                print(f"Field 'audio' in settings is not a string.")
 
     def index_matching(self, model_name: str, model_path: str) -> str:
         matching_index_files = []
