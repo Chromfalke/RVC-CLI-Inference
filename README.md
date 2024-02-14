@@ -26,6 +26,8 @@ The project was developed and tested on Linux using conda for the virtual enviro
 
 At the moment only the inference process itself is supported. That means that the input files should consist of clear and clean speech without music or background noise. If you want to make a song cover for example you'll need to extract the vocals first with another tool.
 
+While the [Retrieval-based Voice Conversion WebUI](https://github.com/RVC-Project/Retrieval-based-Voice-Conversion-WebUI) supports CPU, Cuda, ROCm as well as Intel ARC, this project is only tested with te first two options.
+
 ## Disclaimer
 This project is for educational and research purposes only. We do not endorse or promote the use of generative AI for unethical or illegal purposes. We are not responsible for any damages or liabilities arising from the use or misuse of the generated voice overs.
 
