@@ -280,7 +280,7 @@ class CLI_Interface:
                     if 0 <= selection_num < len(audio_files):
                         self.audio.append(os.path.join("in", audio_files[selection_num]))
                     elif selection_num == len(audio_files):
-                        for i in range(audio_files):
+                        for i in range(len(audio_files)):
                             self.audio.append(os.path.join("in", audio_files[i]))
                     else:
                         print("Invalid selection. Try again.")
@@ -291,7 +291,8 @@ class CLI_Interface:
     def perform_inference(self):
         for model, index in self.model:
             for audio_file in self.audio:
-                out_name = os.path.basename(audio_file).split(".")[0]+f"_{model}.wav"
+                model_name = os.path.basename(model).split(".")[0]
+                out_name = os.path.basename(audio_file).split(".")[0]+f"_{model_name}.wav"
                 output_file = os.path.join("out", out_name)
                 infer(self.pitch_adjustment, audio_file, output_file, model, index, self.device, self.pitch_extraction_method)
 
@@ -313,3 +314,4 @@ if __name__ == "__main__":
     interface = CLI_Interface()
     interface.load_settings()
     interface.fill_remaining_params()
+    interface.perform_inference()
